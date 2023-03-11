@@ -1,0 +1,57 @@
+import java.util.*;
+
+class RecentlyPlayedStore {
+    private int capacity;
+    private Map<String, String> songUserMap;
+    private Map<String, Deque<String>> userSongsMap;
+
+    public RecentlyPlayedStore(int capacity) {
+        this.capacity = capacity;
+        this.songUserMap = new HashMap<>();
+        this.userSongsMap = new HashMap<>();
+    }
+
+    public void play(String user, String song) {
+        if (songUserMap.containsKey(song)) {
+            String prevUser = songUserMap.get(song);
+            Deque<String> prevSongs = userSongsMap.get(prevUser);
+            prevSongs.remove(song);
+        } else if (songUserMap.size() >= capacity) {
+            String oldestSong = null;
+            for (Map.Entry<String, Deque<String>> entry : userSongsMap.entrySet()) {
+                Deque<String> songs = entry.getValue();
+                if (!songs.isEmpty() && songUserMap.containsKey(songs.peek())) {
+                    String oldestSongInUserList = songs.peek();
+                    if (oldestSong == null || oldestSongInUserList.compareTo(oldestSong) < 0) {
+                        oldestSong = oldestSongInUserList;
+                    }
+                }
+            }
+            if (oldestSong != null) {
+                String userToRemoveFrom = songUserMap.get(oldestSong);
+                Deque<String> songsToRemoveFrom = userSongsMap.get(userToRemoveFrom);
+                songsToRemoveFrom.remove(oldestSong);
+                songUserMap.remove(oldestSong);
+            }
+        }
+        songUserMap.put(song, user);
+        userSongsMap.computeIfAbsent(user, k -> new LinkedList<>()).offerLast(song);
+    }
+
+    public List<String> recentSongs(String user, int n) {
+        List<String> result = new ArrayList<>();
+        Deque<String> songs = userSongsMap.getOrDefault(user, new LinkedList<>());
+        Iterator<String> iterator = songs.descendingIterator();
+        while (iterator.hasNext() && n > 0) {
+            String song = iterator.next();
+            if (songUserMap.containsKey(song)) {
+                result.add(song);
+                n--;
+            }
+        }
+        if (!result.isEmpty()) {
+            songs.removeAll(result);
+        }
+        return result;
+    }
+}
