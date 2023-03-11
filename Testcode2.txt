@@ -1,0 +1,38 @@
+import java.util.*;
+
+public class RecentlyPlayedStoreTest {
+    public static void main(String[] args) {
+        RecentlyPlayedStore store = new RecentlyPlayedStore(3);
+
+        // Play some songs
+        store.play("user1", "song1");
+        store.play("user1", "song2");
+        store.play("user2", "song3");
+        store.play("user2", "song4");
+        store.play("user1", "song5");
+
+        // Test recent songs for user1
+        List<String> recentSongs = store.recentSongs("user1", 3);
+        assert recentSongs.equals(Arrays.asList("song5", "song2", "song1"));
+
+        // Test recent songs for user2
+        recentSongs = store.recentSongs("user2", 3);
+        assert recentSongs.equals(Arrays.asList("song4", "song3"));
+
+        // Test recent songs for user3 (user doesn't exist)
+        recentSongs = store.recentSongs("user3", 3);
+        assert recentSongs.isEmpty();
+
+        // Play some more songs
+        store.play("user1", "song6");
+        store.play("user2", "song7");
+
+        // Test recent songs for user1 (should include song5 and exclude song1)
+        recentSongs = store.recentSongs("user1", 3);
+        assert recentSongs.equals(Arrays.asList("song6", "song5", "song2"));
+
+        // Test recent songs for user2 (should include song7 and exclude song3)
+        recentSongs = store.recentSongs("user2", 3);
+        assert recentSongs.equals(Arrays.asList("song7", "song4", "song7"));
+    }
+}
